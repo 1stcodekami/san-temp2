@@ -1,3 +1,4 @@
+// src/app/component/ceramics.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,11 +7,12 @@ import { client } from "@/sanity/lib/client";
 import Image from "next/image";
 import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 // Initialize the image URL builder with your Sanity project configuration
 const builder = imageUrlBuilder(client);
 
-function urlFor(source: any) {
+function urlFor(source: SanityImageSource) {
   return builder.image(source); // Returns the image URL for the Sanity image source
 }
 
@@ -24,6 +26,7 @@ const Ceramics2: React.FC<CeramicsProps> = () => {
   useEffect(() => {
     async function fetchProducts() {
       const query = `*[_type == 'product']{
+        _id,
         image,
         description,
         "category": category->name,
@@ -31,7 +34,7 @@ const Ceramics2: React.FC<CeramicsProps> = () => {
         name,
         slug
       }`;
-      const data: Product[] = await client.fetch(query);
+      const data = await client.fetch<Product[]>(query);
       setProducts(data);
     }
     fetchProducts();
@@ -41,15 +44,38 @@ const Ceramics2: React.FC<CeramicsProps> = () => {
     <div className="w-full px-4 sm:px-8 lg:px-20">
       {/* Responsive Grid Columns */}
       <div className="max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.slice(0, 4).map((product) => ( // Only display first 4 products
+        {products.slice(0, 4).map((product) => (
+          // Only display first 4 products
           <div key={product._id}>
-            <Link href={`/products/${product.slug?.current}`}>
+            {product.slug ? (
+              <Link href={`/products/${product.slug.current}`}>
+                <div className="bg-[#F5F5F5] flex justify-center items-center">
+                  <div className="w-full h-[375px] relative transform hover:scale-105 transition-all duration-300">
+                    {/* Display Image */}
+                    {product.image && (
+                      <Image
+                        src={urlFor(product.image)
+                          .width(300)
+                          .height(200)
+                          .url()}
+                        alt={product.name}
+                        layout="fill"
+                        className="object-cover"
+                      />
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ) : (
               <div className="bg-[#F5F5F5] flex justify-center items-center">
-                <div className="w-full h-[375px] relative transform hover:scale-105 transition-all duration-300">
+                <div className="w-full h-[375px] relative">
                   {/* Display Image */}
-                  {product.image && product.image.asset && (
+                  {product.image && (
                     <Image
-                      src={urlFor(product.image).width(300).height(200).url()} // Generate image URL with Sanity's Image URL Builder
+                      src={urlFor(product.image)
+                        .width(300)
+                        .height(200)
+                        .url()}
                       alt={product.name}
                       layout="fill"
                       className="object-cover"
@@ -57,14 +83,15 @@ const Ceramics2: React.FC<CeramicsProps> = () => {
                   )}
                 </div>
               </div>
-            </Link>
+            )}
             {/* Text below the image */}
             <div className="mt-4 text-start">
-              <h1 className="font-medium text-base sm:text-lg">{product.name}</h1>
-              <p className="text-sm sm:text-base text-gray-600">£{product.price}</p>
-              {/* {product.category && (
-                <p className="text-sm text-gray-500">Category: {product.category}</p> // Display the category name
-              )} */}
+              <h1 className="font-medium text-base sm:text-lg">
+                {product.name}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600">
+                £{product.price}
+              </p>
             </div>
           </div>
         ))}
