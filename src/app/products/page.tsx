@@ -1,23 +1,22 @@
-// src\app\products\page.tsx
+// src/app/products/page.tsx
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { client } from "@/sanity/lib/client";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import imageUrlBuilder from "@sanity/image-url";
+import Image from "next/image"; // Import Image component
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
-// Define product type (note the addition of the slug)
+// Define the Product interface with proper typing
 interface Product {
   _id: string;
   name: string;
   price: number;
   description: string;
-  image: {
-    asset: {
-      _ref: string;
-    };
-  };
+  image: SanityImageSource;
   slug: {
     current: string;
   };
@@ -26,7 +25,8 @@ interface Product {
 
 // Configure image URL builder
 const builder = imageUrlBuilder(client);
-function urlFor(source: any) {
+
+function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
@@ -55,7 +55,10 @@ export default function Products() {
   // Calculate indices for current page items
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = products.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(products.length / productsPerPage);
 
   // Handler for page change
@@ -82,7 +85,7 @@ export default function Products() {
   return (
     <>
       <div className="text-center p-10">
-        <h1 className="font-bold text-4xl mb-4">All Product</h1>
+        <h1 className="font-bold text-4xl mb-4">All Products</h1>
       </div>
 
       <section
@@ -94,10 +97,12 @@ export default function Products() {
           <Link key={product._id} href={`/products/${product.slug.current}`}>
             <div className="w-72 bg-white shadow-md rounded-xl duration-500 hover:scale-105 hover:shadow-xl cursor-pointer">
               {product.image && (
-                <img
+                <Image
                   src={urlFor(product.image).url()}
                   alt={product.name}
-                  className="h-80 w-72 object-cover rounded-t-xl"
+                  className="object-cover rounded-t-xl"
+                  width={288} // Adjust width as needed
+                  height={320} // Adjust height as needed
                 />
               )}
               <div className="px-4 py-3 w-72">
@@ -109,7 +114,7 @@ export default function Products() {
                 </div>
                 <div className="flex items-center">
                   <p className="text-lg font-semibold text-black cursor-auto my-3">
-                    ${product.price}
+                    £{product.price}
                   </p>
                   <div className="ml-auto">
                     <MdOutlineShoppingCart
@@ -131,9 +136,12 @@ export default function Products() {
           <li
             onClick={handlePrevious}
             className={`flex items-center justify-center shrink-0 bg-gray-100 w-9 h-9 rounded-md cursor-pointer ${
-              currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-200"
+              currentPage === 1
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-200"
             }`}
           >
+            {/* SVG for Previous Arrow */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-3 fill-gray-400"
@@ -168,9 +176,12 @@ export default function Products() {
           <li
             onClick={handleNext}
             className={`flex items-center justify-center shrink-0 border w-9 h-9 rounded-md cursor-pointer ${
-              currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:border-blue-500"
+              currentPage === totalPages
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-blue-500"
             }`}
           >
+            {/* SVG for Next Arrow */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-3 fill-gray-400 rotate-180"
