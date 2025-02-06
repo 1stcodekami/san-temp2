@@ -1,4 +1,4 @@
-// src\app\products\page.tsx
+// src/app/products/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -26,7 +26,9 @@ interface Product {
 
 // Configure image URL builder
 const builder = imageUrlBuilder(client);
-function urlFor(source: any) {
+
+// Instead of using "any", use the image field type from Product
+function urlFor(source: Product["image"]) {
   return builder.image(source);
 }
 
